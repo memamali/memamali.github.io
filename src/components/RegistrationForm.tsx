@@ -4,7 +4,7 @@ import { useState } from "react";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { formFields, type FormField } from "@/lib/formConfig";
-import { isValidBahrainMobile, toArabicDigits } from "@/lib/utils";
+import { isValidBahrainMobile, toArabicDigits, toWesternDigits } from "@/lib/utils";
 import { MEN_ONLY_MARKER } from "@/lib/defaults";
 import type { Config } from "@/lib/types";
 import { BrandHeader } from "./BrandHeader";
@@ -15,8 +15,9 @@ function validate(field: FormField, raw: string): string | null {
   if (field.required && !value) return "هذا الحقل مطلوب";
   if (!value) return null;
   if (field.type === "number") {
-    if (!/^\d+$/.test(value)) return "يرجى إدخال رقم صحيح";
-    if (field.min != null && Number(value) < field.min) {
+    const western = toWesternDigits(value);
+    if (!/^\d+$/.test(western)) return "يرجى إدخال رقم صحيح";
+    if (field.min != null && Number(western) < field.min) {
       return `القيمة يجب ألا تقل عن ${toArabicDigits(field.min)}`;
     }
   }
@@ -63,7 +64,12 @@ export default function RegistrationForm({ config }: { config: Config }) {
       const payload: Record<string, unknown> = {};
       for (const f of formFields) {
         const v = (values[f.id] ?? "").trim();
-        payload[f.id] = f.type === "number" ? Number(v) : v;
+        payload[f.id] =
+          f.type === "number"
+            ? Number(toWesternDigits(v))
+            : f.type === "tel"
+              ? toWesternDigits(v)
+              : v;
       }
       await addDoc(collection(db, "responses"), {
         ...payload,

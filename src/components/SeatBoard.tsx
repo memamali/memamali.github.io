@@ -2,7 +2,7 @@
 
 import { useShows } from "@/hooks/useShows";
 import { seatStatus, toArabicDigits, formatTimeOnly } from "@/lib/utils";
-import type { Config } from "@/lib/types";
+import type { Config, Show } from "@/lib/types";
 import { BrandHeader } from "./BrandHeader";
 
 const STATUS_TEXT: Record<string, string> = {
@@ -18,10 +18,11 @@ const STATUS_BG: Record<string, string> = {
 
 export default function SeatBoard({ config }: { config: Config }) {
   const { shows, loading, lastUpdated, fromCache } = useShows();
+  const current = shows.find((s) => s.id === config.currentShowId) ?? null;
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col px-4 py-8">
-      <BrandHeader subtitle="المقاعد المتبقّية لكل عرض" />
+    <main className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 py-8">
+      <BrandHeader subtitle="المقاعد المتبقّية" />
 
       <div className="mt-2 flex items-center justify-center gap-2 text-xs text-[var(--color-faint)]">
         <span
@@ -35,65 +36,61 @@ export default function SeatBoard({ config }: { config: Config }) {
         </span>
       </div>
 
-      {loading ? (
-        <p className="mt-10 text-center text-[var(--color-muted)]">جارٍ التحميل…</p>
-      ) : shows.length === 0 ? (
-        <p className="mt-10 text-center text-[var(--color-muted)]">
-          لا توجد عروض متاحة حالياً.
-        </p>
-      ) : (
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {shows.map((show) => {
-            const st = seatStatus(show.seatsRemaining, show.capacity);
-            const pct =
-              show.capacity > 0
-                ? Math.max(0, Math.min(100, (show.seatsRemaining / show.capacity) * 100))
-                : 0;
-            const isCurrent = config.currentShowId === show.id;
-            return (
-              <div
-                key={show.id}
-                className={`relative rounded-2xl border bg-[var(--color-surface)] p-5 ${
-                  isCurrent
-                    ? "border-[var(--color-rust)] ring-1 ring-[var(--color-rust)]"
-                    : "border-[var(--color-line)]"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-lg font-bold text-white">{show.name}</h3>
-                  {isCurrent ? (
-                    <span className="shrink-0 rounded-full bg-[var(--color-rust)] px-3 py-1 text-xs font-bold text-white">
-                      العرض الحالي
-                    </span>
-                  ) : null}
-                </div>
-
-                <div className="mt-4 flex items-baseline gap-2">
-                  <span
-                    className={`text-5xl font-black tabular-nums ${STATUS_TEXT[st.key]}`}
-                  >
-                    {toArabicDigits(show.seatsRemaining)}
-                  </span>
-                  <span className="text-sm text-[var(--color-muted)]">
-                    من {toArabicDigits(show.capacity)} مقعد
-                  </span>
-                </div>
-
-                <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className={`h-full rounded-full transition-all duration-500 ${STATUS_BG[st.key]}`}
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-
-                <div className={`mt-2 text-sm font-semibold ${STATUS_TEXT[st.key]}`}>
-                  {st.label}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <div className="flex flex-1 flex-col items-center justify-center py-6">
+        {loading ? (
+          <p className="text-[var(--color-muted)]">جارٍ التحميل…</p>
+        ) : current ? (
+          <Hero show={current} />
+        ) : (
+          <p className="text-center text-lg text-[var(--color-muted)]">
+            سيبدأ العرض قريباً بإذن الله.
+          </p>
+        )}
+      </div>
     </main>
+  );
+}
+
+function Hero({ show }: { show: Show }) {
+  const st = seatStatus(show.seatsRemaining, show.capacity);
+  const pct =
+    show.capacity > 0
+      ? Math.max(0, Math.min(100, (show.seatsRemaining / show.capacity) * 100))
+      : 0;
+
+  return (
+    <section className="w-full rounded-3xl border-2 border-[var(--color-rust)] bg-[var(--color-surface)] p-8 text-center shadow-2xl shadow-black/30">
+      <span className="inline-block rounded-full bg-[var(--color-rust)] px-4 py-1.5 text-sm font-bold text-white">
+        العرض الحالي
+      </span>
+
+      <h2 className="mt-5 text-2xl font-bold text-white sm:text-3xl">{show.name}</h2>
+
+      <div className="my-6">
+        <span
+          key={show.seatsRemaining}
+          className={`animate-count-pop block text-[5.5rem] font-black leading-none tabular-nums sm:text-[7rem] ${STATUS_TEXT[st.key]}`}
+        >
+          {toArabicDigits(show.seatsRemaining)}
+        </span>
+        <p className="mt-3 text-[var(--color-muted)]">
+          مقعداً متبقّياً من {toArabicDigits(show.capacity)}
+        </p>
+      </div>
+
+      <div className="mx-auto h-3 w-full max-w-sm overflow-hidden rounded-full bg-white/10">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${STATUS_BG[st.key]}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+
+      <div
+        className={`mt-4 inline-block rounded-full px-4 py-1.5 text-base font-bold ${STATUS_TEXT[st.key]}`}
+        style={{ backgroundColor: "color-mix(in srgb, currentColor 15%, transparent)" }}
+      >
+        {st.label}
+      </div>
+    </section>
   );
 }
