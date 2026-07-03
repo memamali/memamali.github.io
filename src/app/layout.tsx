@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { thmanyah, plexArabic } from "./fonts";
+import { PreloadResources } from "@/components/PreloadResources";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +23,10 @@ export default function RootLayout({
       dir="rtl"
       className={`${thmanyah.variable} ${plexArabic.variable}`}
     >
-      <body className="min-h-dvh antialiased">{children}</body>
+      <body className="min-h-dvh antialiased">
+        <PreloadResources />
+        {children}
+      </body>
     </html>
   );
 }

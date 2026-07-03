@@ -3,13 +3,14 @@
 import { useConfig } from "@/hooks/useConfig";
 import RegistrationForm from "@/components/RegistrationForm";
 import SeatBoard from "@/components/SeatBoard";
+import LoadingScreen from "@/components/LoadingScreen";
 import { BrandHeader } from "@/components/BrandHeader";
 
 export default function Home() {
   const { config, exists, loading, error } = useConfig();
 
   if (loading) {
-    return <CenteredNote text="جارٍ التحميل…" />;
+    return <LoadingScreen />;
   }
   if (error) {
     return <CenteredNote logo text="تعذّر الاتصال بالخادم. حاول لاحقاً." />;
