@@ -11,14 +11,18 @@ import ResponsesTable from "@/components/admin/ResponsesTable";
 import ShowsSetup from "@/components/admin/ShowsSetup";
 import DoorControl from "@/components/admin/DoorControl";
 import ModeControl from "@/components/admin/ModeControl";
+import ContentEditor from "@/components/admin/ContentEditor";
+import NewShowControl from "@/components/admin/NewShowControl";
 
-type Tab = "responses" | "shows" | "door" | "mode";
+type Tab = "responses" | "shows" | "door" | "mode" | "content" | "newshow";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "responses", label: "الردود" },
   { id: "shows", label: "العروض" },
   { id: "door", label: "التحكم بالباب" },
   { id: "mode", label: "وضع الموقع" },
+  { id: "content", label: "المحتوى" },
+  { id: "newshow", label: "بدء عرض جديد" },
 ];
 
 export default function AdminPage() {
@@ -78,6 +82,8 @@ export default function AdminPage() {
             {tab === "shows" && <ShowsSetup />}
             {tab === "door" && <DoorControl />}
             {tab === "mode" && <ModeControl />}
+            {tab === "content" && <ContentEditor />}
+            {tab === "newshow" && <NewShowControl />}
           </section>
         </>
       )}
