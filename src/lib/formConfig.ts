@@ -19,6 +19,6 @@ export const formFields: FormField[] = [
     label: "هل أنت متأكد من حضورك؟",
     type: "select",
     required: true,
-    options: ["نعم", "لست متأكد", "لا"],
+    options: ["نعم", "لست متأكد"],
   },
 ];
